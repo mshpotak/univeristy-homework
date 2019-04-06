@@ -1,20 +1,26 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #include <stdio.h>
+#include <unistd.h>
 #include <errno.h>
 
+#include <stdlib.h>
+
+#define FILE2MODE 0644
+
 void print_error(){
-    perror("Error:\n");
+    perror("Error:\t");
 
     char input;
-    prinf("Do you want to continue? y/n\n");
+    printf("Do you want to continue? y/n\n");
 
     answer:
     if((input = getchar()) == 'y'){
-        continue;
+        return;
     } else if(input == 'n'){
-        exit();
+        exit(-1);
     } else {
         goto answer;
     }
@@ -23,55 +29,59 @@ void print_error(){
 
 void alter_letters(char *buffer, int buffer_size){
     int pos;
-    for(int i = 0; i < buffersize; i++)
+    for(int i = 0; i < buffer_size; i++)
         if((buffer[i]>=97)&&(buffer[i]<=122)) buffer[i] -= 32;
-    printf("%s\n", buffer);
     return;
 }
 
-int main(int argc, const *char[] argv){
+int main(int argc, const char *argv[]){
     //check for 2 arguments
-    if(argc != 3) perror("Error. Enter 2 arguments.\n");
+    if(argc != 3) {
+        printf("Error. Enter 2 arguments.\n");
+        return -1;
+    }
     int file1fd, file2fd;
     //open 1st file as RD
-    if((file1fd = open(argv[1],O_RDONLY)) == -1)
+    do{
+      if((file1fd = open(argv[1], O_RDONLY)) == -1)
         print_error();
+    }while(file1fd == -1);
     //open 2nd file as RDWR and rewrite
         //create 2nd file if it doesn't exist
-    if((ile2fd = open(argv[2],(O_RDWR|O_CREAT|O_TRUNC)) == -1)
-        print_error();
+    do{
+      if((file2fd = open(argv[2], (O_RDWR|O_CREAT|O_TRUNC), FILE2MODE)) == -1)
+          print_error();
+    }while(file1fd == -1);
 
     int buffer_size = 512;
     char buffer[buffer_size];
     //make a loop
-    int bytes_rd = 0, total_rd = 0;
-    int bytes_wr = 0, total_wr = 0;
+    int bytes_rd, total_rd = 0;
+    int bytes_wr, total_wr = 0;
     do{
+        bytes_rd = 0;
+        bytes_wr = 0;
         //read 512 bytes from 1st file and count read bytes
-        while(bytes_rd < 0){
+        do{
             if((bytes_rd = read(file1fd, buffer, buffer_size)) == -1)
                 print_error();
-        }
+        }while(bytes_rd == -1);
 
             //make all small letters big
         alter_letters(buffer, bytes_rd);
-        printf("%s\n", buffer);
 
-        while(bytes_wr < 0){
-        if((bytes_wr = write()) == -1)
-            print_error();
-        }
+        do{
+            if((bytes_wr = write(file2fd,(const char*)buffer, bytes_rd)) == -1)
+                print_error();
+        }while(bytes_wr == -1);
         //write 512 bytes to second file
             //count written bytes
         total_rd += bytes_rd;
         total_wr += bytes_wr;
-        bytes_rd = 0;
-        bytes_wr = 0;
-
         //break when EOF is reached
     } while(bytes_rd == buffer_size);
     //print and return the amount of written bytes
-    printf("\n\nTotal bytes read:\t %d\n", bytes_rd);
-    printf("\n\nTotal bytes written:\t %d\n", bytes_wr);
+    printf("\n\nTotal bytes read:\t %d\n", total_rd);
+    printf("Total bytes written:\t %d\n", total_wr);
     return bytes_wr;
 }
