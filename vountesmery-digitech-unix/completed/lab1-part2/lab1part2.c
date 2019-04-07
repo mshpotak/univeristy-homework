@@ -1,4 +1,4 @@
-// by Mykhailo SHPOTAK
+// by Mykhailo SHPOTAK, Ivan PANCHENKO
 // https://github.com/mshpotak/univeristy-homework/tree/master/vountesmery-digitech-unix/completed/lab1-part2
 
 
