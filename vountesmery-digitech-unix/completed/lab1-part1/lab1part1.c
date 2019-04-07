@@ -11,7 +11,7 @@
 #include <unistd.h>
 //for perror() and errno
 #include <errno.h>
-//forgot why, lol, for explicit exit() I guess
+//for explicit exit()
 #include <stdlib.h>
 
 #define FILE2MODE 0644
