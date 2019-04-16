@@ -1,0 +1,22 @@
+PID# 11043; Tue Apr 16 17:30:05 2019;
+log started
+
+PID# 11043; Tue Apr 16 17:30:05 2019;
+fork process started
+
+PID# 11043; Tue Apr 16 17:30:05 2019;
+main process closed
+
+PID# 11044; Tue Apr 16 17:30:05 2019;
+daemon process started
+
+PID# 11044; Tue Apr 16 17:30:05 2019;
+fork process closed
+
+PID# 11045; Tue Apr 16 17:30:05 2019;
+daemon PID is #11045
+daemon PPID is #11044
+daemon SID is #11044
+daemon TID is #11045
+daemon UID is #1000
+daemon GID is #1000
