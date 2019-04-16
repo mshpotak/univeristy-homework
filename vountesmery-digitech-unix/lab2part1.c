@@ -1,6 +1,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <linux/unistd.h>
+#include <sys/syscall.h>
 
 #include <stdio.h>
 #include <errno.h>
@@ -30,9 +32,16 @@ int main(){
     pid_t pid_me = getpid();
     pid_t pid_parent = getppid();
     pid_t pid_session = getsid(pid_me);
+    pid_t pid_thread = syscall(SYS_gettid);
+    uid_t pid_user = getuid();
+    gid_t pid_group = getgid();
+
     printf("PID: %d\n", pid_me);
     printf("PPID: %d\n", pid_parent);
-    printf("SID: %d\n\n", pid_session);
+    printf("SID: %d\n", pid_session);
+    printf("TID: %d\n", pid_thread);
+    printf("UID: %d\n", pid_user);
+    printf("GID: %d\n\n", pid_group);
 
     getchar();
 
