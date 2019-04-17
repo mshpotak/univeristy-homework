@@ -1,0 +1,23 @@
+PID# 15606; Wed Apr 17 13:16:52 2019; 
+log started
+
+PID# 15606; Wed Apr 17 13:16:52 2019; 
+fork process started
+
+PID# 15606; Wed Apr 17 13:16:52 2019; 
+main process closed
+
+PID# 15607; Wed Apr 17 13:16:52 2019; 
+daemon process started
+
+PID# 15607; Wed Apr 17 13:16:52 2019; 
+fork process closed
+
+PID# 15608; Wed Apr 17 13:16:52 2019; 
+daemon PID is #15608
+daemon PPID is #15607
+daemon SID is #15607
+daemon TID is #15608
+daemon UID is #1000
+daemon GID is #1000
+

@@ -1,3 +1,7 @@
+// by Mykhailo SHPOTAK
+// https://github.com/mshpotak/univeristy-homework/tree/master/vountesmery-digitech-unix/completed/lab2-part1
+
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -51,7 +55,6 @@ int main(){
     pid_t pid_fork1;
     pid_t pid_current;
     int status;
-    int options = 0;
     clock_t timer_start;
     double time_end = 3;
     double time_count = 0;

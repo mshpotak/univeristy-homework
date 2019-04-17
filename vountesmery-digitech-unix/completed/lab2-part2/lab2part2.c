@@ -1,3 +1,7 @@
+// by Mykhailo SHPOTAK
+// https://github.com/mshpotak/univeristy-homework/tree/master/vountesmery-digitech-unix/completed/lab2-part2
+
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -152,40 +156,34 @@ int main(){
         return 0;
     }
 
+    // int stdin_copy = dup(0);
+    // int stdout_copy = dup(1);
+    // int stderr_copy = dup(2);
+
     if(close(file_fd) == -1){
-        perror("close error:");
+        perror("close file_fd error:");
+        return 0;
+    };
+    if(close(0) == -1){
+        perror("close stdin error:");
+        return 0;
+    };
+    if(close(1) == -1){
+        perror("close stdout error:");
+        return 0;
+    };
+    if(close(2) == -1){
+        perror("close stderr error:");
         return 0;
     };
 
-    file_fd = open( "/dev/null", O_WRONLY);
-    if( file_fd == -1 ){
-        perror("open error:");
-        return 0;
-    }
-    if( dup2(0, file_fd) == -1 ){     //redirect STDIN
-        perror("dup2 error:");
-        close(file_fd);
-        return 0;
-    };
-    if( dup2(1, file_fd) == -1 ){     //redirect STDOUT
-        perror("dup2 error:");
-        close(file_fd);
-        return 0;
-    };
-    if( dup2(2, file_fd) == -1 ){     //redirect STDERR
-        perror("dup2 error:");
-        close(file_fd);
-        return 0;
-    };
-
-    if( close(file_fd) == -1 ){
-        perror("close error:");
-        return 0;
-    };
+    freopen( "/dev/null", "w+", stdin );
+    freopen( "/dev/null", "w+", stdout );
+    freopen( "/dev/null", "w+", stderr );
 
     file_fd = open( "/home/mykhailo/github/university-homework/vountesmery-digitech-unix/log.txt", O_WRONLY|O_APPEND);
     if( file_fd == -1 ){
-        perror("open1 error:");
+        perror("open log as daemon error:");
         return 0;
     }
 
@@ -196,7 +194,7 @@ int main(){
     uid_t uid_daemon = getuid();
     gid_t gid_daemon = getgid();
 
-    printf("\nDaemon process IDs:\n");
+    printf("\nDaemon process IDs:\n"); //goes to /dev/null
     printf("PID: %d\n", pid_daemon);
     printf("PPID: %d\n", ppid_daemon);
     printf("SID: %d\n", sid_daemon);
