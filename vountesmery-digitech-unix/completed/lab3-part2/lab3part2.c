@@ -1,3 +1,6 @@
+// by Mykhailo SHPOTAK, Ivan PANCHENKO
+// https://github.com/mshpotak/univeristy-homework/tree/master/vountesmery-digitech-unix/completed/lab3-part2
+
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/mman.h>
