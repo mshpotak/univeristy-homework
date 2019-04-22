@@ -1,0 +1,7 @@
+Sun Apr 21 23:30:51 2019: Program started with PID: 7586
+Sun Apr 21 23:30:53 2019: Waiting
+Sun Apr 21 23:30:54 2019: Program terminated
+Termination info: 
+	SIGNO: 1
+	SIGERR: 0
+	SIGCD: 0
