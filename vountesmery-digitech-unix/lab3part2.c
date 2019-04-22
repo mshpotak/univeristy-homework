@@ -29,7 +29,20 @@ struct datum {
     char str[STR_SIZE];
 };
 
+// int write_shm(int fd_shm, struct datum *shmem_addr){
+//
+// }
+//
+// int read_shm(){
+//
+// }
+//
+// int rdwr_shm(){
+//
+// }
+
 int main(int argc, const char *argv[]){
+
     int result;
     struct datum *shmem_addr;
     int fd_shm;
@@ -39,7 +52,7 @@ int main(int argc, const char *argv[]){
 
     // 2. Реєструє обїект розподіленої пам`яті через виклик shm_open
     //int shm_open(const char *name, int oflag, mode_t mode);
-    fd_shm = shm_open("/shmlog", O_CREAT|O_TRUNC|O_RDWR, FILE2MODE);
+    fd_shm = shm_open("/shmlog.txt", O_CREAT|O_TRUNC|O_RDWR, FILE2MODE);
     if(fd_shm == -1){
         perror("shm_open() error:");
     }
@@ -68,17 +81,17 @@ int main(int argc, const char *argv[]){
         // c. Записує у структуру натомість свій ідентификатор процесу, поточний час та отриману строку
         //memset(&mydata, 0, datum_size);
         printf("Input a string:\t");
-        do{
+        while(1){
             result = scanf("%[^\n]s", shmem_addr->str);
+            if(result == -1){
+                perror("scanf() error:");
+            }
             if(result > STR_SIZE){
                 printf("The string is too big. The number of symbols must be less then %d.\n", STR_SIZE);
                 printf("Input another string:\t");
                 continue;
-            }
-            if(result == -1){
-                perror("scanf() error:");
-            }
-        } while(result <= STR_SIZE);
+            } else break;
+        }
         shmem_addr->pid = pid;
         time(&curtime);
         shmem_addr->timestamp = curtime;
