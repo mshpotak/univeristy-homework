@@ -13,12 +13,14 @@
 #include <signal.h>
 #include <poll.h>
 
-#define PORT 3210
-#define BACKLOG 5
+#define PORT        3210
+#define BACKLOG     5
+#define FILEMODE    0644
+#define TIMEOUT_MS  60000
+#define BUFF_SIZE   256
 
 // 2. Описує глобальний дескриптор файла логу.
 
-char path[] = "/home/mykhailo/github/university-homework/vountesmery-digitech-unix/";
 int fd_log_prog;
 int fd_log_serv;
 
@@ -34,46 +36,42 @@ char* set_path( char* path, char* file_name){
 void log_entry( int fd_log, const char* note ){
     int result;
     time_t log_timestamp;
-    char log_info[256];
-    int attempts = 0;
+    char log_info[BUFF_SIZE];
     time( &log_timestamp );
 
     sprintf( log_info, "PID#%d; %.24s; \n%s\n\n", getpid(), ctime( &log_timestamp ), note );
 
-    retry:
-    result = write( fd_log, (const char*)log_info, strlen(log_info) );
-    if( result == -1 ){
-        attempts++;
-        if( attempts >= 5 ) {
-            perror("write error:");
-            return;
+    for(int attempts = 0; attempts < 5; attempts++){
+        result = write( fd_log, (const char*)log_info, strlen(log_info) );
+        if( result == -1 ){
+            if( attempts == 4 ) {
+                perror("write error:");
+                return;
+            }
+        } else {
+            break;
         }
-        goto retry;
     }
     printf("%.8s %s\n", ctime( &log_timestamp ) + 11, note);
     return;
 }
 
-int wait_for_connection(int fd_serv){
+int wait_for_connection( int fd_serv ){
     int result;
     struct pollfd sfd;
     sfd.fd = fd_serv;
     sfd.events = POLLIN;
     //wait until data is available
     while(1){
-        result = poll(&sfd, 1, 5000);
+        result = poll(&sfd, 1, 0);
         if(result == 0){
-            //printf("%.8s No connections found...\n", ctime( &time_current ) + 11 );
             continue;
         }
         if(result == -1){
-            perror("poll error:");
-            return -1;
+            continue;
         };
         if(result > 0){
-            //check for error
             if(sfd.revents & POLLERR){
-                //perror("poll revents error:");
                 continue;
             }
             //recv() if data is available
@@ -82,65 +80,64 @@ int wait_for_connection(int fd_serv){
                 if( result == 0 ) {
                     return 0;
                 } else {
-                    //continue;
-                    exit(0);
+                    raise(SIGSTOP);
+                    continue;
                 }
             }
         }
     }
-    return 1;
 }
 
-int wait_for_msg(int fd_serv, double timeout){
+int wait_for_msg(int fd_serv, int timeout_ms){
     int result;
     struct pollfd sfd;
     sfd.fd = fd_serv;
     sfd.events = POLLIN;
-    time_t time_start, time_current;
-    time( &time_start );
+    time_t time_current;
+
     //wait until data is available
-    time( &time_current );
-    while( (timeout == 0) || ( difftime( time_current, time_start ) < timeout ) ){
-        result = poll(&sfd, 1, 5000);
+    while(1){
+        result = poll(&sfd, 1, timeout_ms);
         time( &time_current );
         if(result == 0){
-            printf("%.8s No connections found...\n", ctime( &time_current ) + 11 );
-            continue;
+            return 1;
         }
         if(result == -1){
             perror("poll error:");
             return -1;
         };
         if(result > 0){
-            //check for error
             if(sfd.revents & POLLERR){
-                //perror("poll revents error:");
-                continue;
+                perror("poll error:");
+                return -1;
             }
             if(sfd.revents & POLLIN){
                 return 0;
-
             }
         }
     }
-    return 1;
 }
 
 
 void add_prefix( char* msg ){
-    char temp[256];
+    char temp[BUFF_SIZE];
     pid_t pid = getpid();
     time_t timestamp = time(&timestamp);
-    memset( temp, '\0', 256);
+    memset( temp, '\0', BUFF_SIZE);
     sprintf( temp, "PID#%d; %.24s; %s", pid, ctime(&timestamp), msg);
-    memcpy( msg, temp, 256);
+    memcpy( msg, temp, BUFF_SIZE);
 }
 
 int main( int argc, char *argv[] ){
     int result;
-    char* file_path = set_path( path,  "log_program.txt" );
+    pid_t pid_main = getpid();
+    char buffer[BUFF_SIZE];
+    getcwd( buffer, BUFF_SIZE );
+    //char path[] = "/home/mykhailo/github/university-homework/vountesmery-digitech-unix/";
+    char* file_path = set_path( buffer,  "/log_program.txt" );
 
-    fd_log_prog = open( file_path, O_CREAT|O_TRUNC|O_RDWR, 0644 );
+    fd_log_prog = open( file_path, O_CREAT|O_TRUNC|O_RDWR, FILEMODE );
+    free(file_path);
     log_entry( fd_log_prog, "program log created" );
 
     struct sockaddr_in address;
@@ -157,7 +154,7 @@ int main( int argc, char *argv[] ){
         log_entry( fd_log_prog, strerror( errno ) );
         return -1;
     }
-    log_entry( fd_log_prog, "socket created" );
+    log_entry( fd_log_prog, "socket() success" );
 
     int option = 1;
     result = setsockopt( fd_serv, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(int) );
@@ -166,7 +163,7 @@ int main( int argc, char *argv[] ){
         log_entry( fd_log_prog, strerror( errno ) );
         return -1;
     }
-    log_entry( fd_log_prog, "address reuse enabled" );
+    log_entry( fd_log_prog, "setsockopt() success" );
 
     result = bind( fd_serv, (struct sockaddr *)&address, addrlen );
     if( result == -1 ){
@@ -174,7 +171,7 @@ int main( int argc, char *argv[] ){
         log_entry( fd_log_prog, strerror(errno) );
         return -1;
     }
-    log_entry( fd_log_prog, "bind created" );
+    log_entry( fd_log_prog, "bind() success" );
 
     result = listen( fd_serv, BACKLOG );
     if( result == -1 ){
@@ -182,48 +179,44 @@ int main( int argc, char *argv[] ){
         log_entry( fd_log_prog, strerror(errno) );
         return -1;
     }
-    log_entry( fd_log_prog, "started listening" );
+    log_entry( fd_log_prog, "listen() success" );
 
-    file_path = set_path( path, "log_server.txt" );
-    fd_log_serv = open( file_path, O_CREAT|O_TRUNC|O_RDWR, 0644);
+    file_path = set_path( buffer, "/log_server.txt" );
+    fd_log_serv = open( file_path, O_CREAT|O_TRUNC|O_RDWR, FILEMODE);
+    free(file_path);
     log_entry( fd_log_prog, "server log created" );
     log_entry( fd_log_serv, "server log created" );
 
     log_entry( fd_log_serv, "connection polling started" );
-    result = wait_for_connection( fd_serv );
-    if( result == -1 ){
-        perror("polling error:");
-        return 0;
-    }
+    wait_for_connection( fd_serv );
     log_entry( fd_log_serv, "connection found" );
 
     int fd_client;
     fd_client = accept( fd_serv, (struct sockaddr *)&address, &addrlen );
-    close(fd_serv);
-
     if( fd_client == -1 ){
-        perror( "accept() error:" );
+        perror("accept() error:");
         log_entry( fd_log_prog, strerror( errno ) );
         return -1;
     }
+    close( fd_serv );
+    kill( pid_main, SIGCONT );
+    log_entry( fd_log_prog, "accept() success" );
     log_entry( fd_log_serv, "connection opened" );
 
-    char buffer[256] = {"\n\t\t----------------------------\n\t\t-- Welcome to the server! --\n\t\t----------------------------\n"};
-
+    memset( buffer, '\0', BUFF_SIZE);
+    strcpy( buffer, "\n\t\t----------------------------\n\t\t-- Welcome to the server! --\n\t\t----------------------------\n" );
     result = send( fd_client, buffer, strlen( buffer ), 0 );
     log_entry( fd_log_serv, "welcome msg sent" );
 
     while( 1 ){
-        result = wait_for_msg( fd_client, 0 );
+        result = wait_for_msg( fd_client, TIMEOUT_MS );
         if( result == 1 ){
             log_entry( fd_log_serv, "timeout: no client actvity detected" );
-            close( fd_client );
-            log_entry( fd_log_serv, "connection closed" );
             break;
         }
 
-        memset( buffer, '\0', 256 );
-        result = recv( fd_client, buffer, 256, 0 );
+        memset( buffer, '\0', BUFF_SIZE );
+        result = recv( fd_client, buffer, BUFF_SIZE, 0 );
         log_entry( fd_log_serv, "msg recieved" );
         if( strcmp( buffer, "close" ) == 0 ){
             add_prefix( buffer );
@@ -239,8 +232,17 @@ int main( int argc, char *argv[] ){
     }
 
     close(fd_client);
+    log_entry( fd_log_serv, "connection closed" );
+    log_entry( fd_log_prog, "close(fd_client)" );
     close(fd_serv);
+    log_entry( fd_log_serv, "socket closed" );
+    log_entry( fd_log_prog, "close(fd_serv)" );
+
+    log_entry( fd_log_serv, "server log finished" );
+    log_entry( fd_log_prog, "close(fd_log_serv)" );
     close(fd_log_serv);
+    log_entry( fd_log_prog, "close(fd_client)" );
+    log_entry( fd_log_prog, "program log finished" );
     close(fd_log_prog);
     return 0;
 }
