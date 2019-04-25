@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <sys/stat.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 #define FILEMODE    0644
 #define TIMEOUT_MS  60000
 #define BUFF_SIZE   256
+#define LOG_PATH    "/tmp/digitech-server"
 
 // 2. Описує глобальний дескриптор файла логу.
 
@@ -128,17 +130,98 @@ void add_prefix( char* msg ){
     memcpy( msg, temp, BUFF_SIZE);
 }
 
+int daemonize(){
+    int result;
+
+    result = fork();
+    if( result == -1 ){
+        perror( "fork error:" );
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    } else if ( result == 0){
+        log_entry( fd_log_prog, "fork process started" );
+    } else {
+        log_entry( fd_log_prog, "main process closed" );
+        exit(1);
+    }
+
+    pid_t sid_daemon = setsid();
+    if( sid_daemon == -1 ){
+        perror("setsid error:");
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    }
+
+    result = fork();
+    if( result == -1 ){
+        perror("fork error:");
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    } else if ( result == 0 ){
+        log_entry( fd_log_prog, "daemon process started" );
+    } else {
+        log_entry( fd_log_prog, "fork process closed" );
+        exit(1);
+    }
+
+    if( chdir("/") == -1 ){
+        perror("chdir error:");
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    }
+
+    umask(0);
+
+    if( close(0) == -1 ){
+        perror("close stdin error:");
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    };
+    if( close(1) == -1 ){
+        perror("close stdout error:");
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    };
+    if( close(2) == -1 ){
+        perror("close stderr error:");
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    };
+    if( close( fd_log_prog ) == -1) {
+        perror("close fd_log_prog error:");
+        //log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    };
+
+    freopen( "/dev/null", "w+", stdin );
+    freopen( "/dev/null", "w+", stdout );
+    freopen( "/dev/null", "w+", stderr );
+
+    return 0;
+}
+
 int main( int argc, char *argv[] ){
     int result;
-    pid_t pid_main = getpid();
-    char buffer[BUFF_SIZE];
-    getcwd( buffer, BUFF_SIZE );
+    pid_t pid_main;
     //char path[] = "/home/mykhailo/github/university-homework/vountesmery-digitech-unix/";
-    char* file_path = set_path( buffer,  "/log_program.txt" );
 
+    pid_main = daemonize();
+    if( pid_main == 1 ){
+        return 0;
+    } else if( pid_main == -1 ){
+        return -1;
+    }
+
+    char* file_path = set_path( LOG_PATH,  "/log_program.txt" );
     fd_log_prog = open( file_path, O_CREAT|O_TRUNC|O_RDWR, FILEMODE );
-    free(file_path);
-    log_entry( fd_log_prog, "program log created" );
+    free( file_path );
+    if( fd_log_prog == -1 ){
+        perror( "open log as daemon error:" );
+        log_entry( fd_log_prog, strerror( errno ) );
+        return -1;
+    }
+    log_entry( fd_log_prog, "daemon program log created" );
+
 
     struct sockaddr_in address;
     socklen_t addrlen = sizeof( struct sockaddr_in );
@@ -181,7 +264,7 @@ int main( int argc, char *argv[] ){
     }
     log_entry( fd_log_prog, "listen() success" );
 
-    file_path = set_path( buffer, "/log_server.txt" );
+    file_path = set_path( LOG_PATH, "/log_server.txt" );
     fd_log_serv = open( file_path, O_CREAT|O_TRUNC|O_RDWR, FILEMODE);
     free(file_path);
     log_entry( fd_log_prog, "server log created" );
@@ -203,6 +286,7 @@ int main( int argc, char *argv[] ){
     log_entry( fd_log_prog, "accept() success" );
     log_entry( fd_log_serv, "connection opened" );
 
+    char buffer[BUFF_SIZE];
     memset( buffer, '\0', BUFF_SIZE);
     strcpy( buffer, "\n\t\t----------------------------\n\t\t-- Welcome to the server! --\n\t\t----------------------------\n" );
     result = send( fd_client, buffer, strlen( buffer ), 0 );
