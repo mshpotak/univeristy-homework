@@ -26,8 +26,6 @@
 #define LOG_PATH    "/tmp/digitech-server"
 // "/home/mykhailo/github/university-homework/vountesmery-digitech-unix"
 
-// 2. Описує глобальний дескриптор файла логу.
-
 int fd_log_prog;
 int fd_log_serv;
 

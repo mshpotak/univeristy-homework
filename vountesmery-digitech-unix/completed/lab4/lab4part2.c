@@ -16,7 +16,9 @@
 #include <signal.h>
 #include <poll.h>
 
-#define PORT 3210
+#define PORT        3210
+#define TIMEOUT_MS  60000
+#define BUFF_SIZE   256
 
 int wait_for_msg(int fd_serv, int timeout_ms){
     int result;
@@ -83,19 +85,19 @@ int main(){
     time(&time_current);
     printf("%.8s Connection requested\n", ctime( &time_current ) + 11 );
 
-    char buffer [256];
+    char buffer [BUFF_SIZE];
     while(1){
-        result = wait_for_msg( fd_serv, 5 );
+        result = wait_for_msg( fd_serv, TIMEOUT_MS );
         if( result == 0 ){
             if( strcmp( buffer, "close" ) == 0 ){
-                memset( buffer, '\0', 256 );
-                result = recv( fd_serv, buffer, 256, 0 );
+                memset( buffer, '\0', BUFF_SIZE );
+                result = recv( fd_serv, buffer, BUFF_SIZE, 0 );
                 time( &time_current );
                 printf( "%.8s Server: %s\n", ctime( &time_current ) + 11, buffer );
                 break;
             }
-            memset( buffer, '\0', 256 );
-            result = recv( fd_serv, buffer, 256, 0 );
+            memset( buffer, '\0', BUFF_SIZE );
+            result = recv( fd_serv, buffer, BUFF_SIZE, 0 );
             time( &time_current );
             printf( "%.8s Server: %s\n", ctime( &time_current ) + 11, buffer );
         } else if( result == -1 ){
@@ -110,7 +112,7 @@ int main(){
             }
         }
 
-        memset( buffer, '\0', 256 );
+        memset( buffer, '\0', BUFF_SIZE );
         time( &time_current );
         printf( "%.8s    You: ", ctime( &time_current ) + 11 );
         scanf( "%[^\n]", buffer );
