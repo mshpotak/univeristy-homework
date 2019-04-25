@@ -16,10 +16,11 @@
 
 #define PORT        3210
 #define BACKLOG     5
-#define FILEMODE    0644
+#define FILEMODE    0777
 #define TIMEOUT_MS  60000
 #define BUFF_SIZE   256
 #define LOG_PATH    "/tmp/digitech-server"
+// "/home/mykhailo/github/university-homework/vountesmery-digitech-unix"
 
 // 2. Описує глобальний дескриптор файла логу.
 
@@ -47,7 +48,7 @@ void log_entry( int fd_log, const char* note ){
         result = write( fd_log, (const char*)log_info, strlen(log_info) );
         if( result == -1 ){
             if( attempts == 4 ) {
-                perror("write error:");
+                perror("write error");
                 return;
             }
         } else {
@@ -135,63 +136,32 @@ int daemonize(){
 
     result = fork();
     if( result == -1 ){
-        perror( "fork error:" );
-        log_entry( fd_log_prog, strerror( errno ) );
+        perror( "fork error" );
         return -1;
-    } else if ( result == 0){
-        log_entry( fd_log_prog, "fork process started" );
-    } else {
-        log_entry( fd_log_prog, "main process closed" );
+    } else if ( result != 0){
         exit(1);
     }
 
     pid_t sid_daemon = setsid();
     if( sid_daemon == -1 ){
-        perror("setsid error:");
-        log_entry( fd_log_prog, strerror( errno ) );
+        perror("setsid error");
         return -1;
     }
 
     result = fork();
     if( result == -1 ){
-        perror("fork error:");
-        log_entry( fd_log_prog, strerror( errno ) );
+        perror("fork error");
         return -1;
-    } else if ( result == 0 ){
-        log_entry( fd_log_prog, "daemon process started" );
-    } else {
-        log_entry( fd_log_prog, "fork process closed" );
+    } else if ( result != 0 ){
         exit(1);
     }
 
     if( chdir("/") == -1 ){
-        perror("chdir error:");
-        log_entry( fd_log_prog, strerror( errno ) );
+        perror("chdir error");
         return -1;
     }
 
     umask(0);
-
-    if( close(0) == -1 ){
-        perror("close stdin error:");
-        log_entry( fd_log_prog, strerror( errno ) );
-        return -1;
-    };
-    if( close(1) == -1 ){
-        perror("close stdout error:");
-        log_entry( fd_log_prog, strerror( errno ) );
-        return -1;
-    };
-    if( close(2) == -1 ){
-        perror("close stderr error:");
-        log_entry( fd_log_prog, strerror( errno ) );
-        return -1;
-    };
-    if( close( fd_log_prog ) == -1) {
-        perror("close fd_log_prog error:");
-        //log_entry( fd_log_prog, strerror( errno ) );
-        return -1;
-    };
 
     freopen( "/dev/null", "w+", stdin );
     freopen( "/dev/null", "w+", stdout );
@@ -203,21 +173,28 @@ int daemonize(){
 int main( int argc, char *argv[] ){
     int result;
     pid_t pid_main;
-    //char path[] = "/home/mykhailo/github/university-homework/vountesmery-digitech-unix/";
 
-    pid_main = daemonize();
-    if( pid_main == 1 ){
+    result = daemonize();
+    if( result == 1 ){
         return 0;
-    } else if( pid_main == -1 ){
+    } else if( result == -1 ){
         return -1;
+    }
+
+    pid_main = getpid();
+    result = mkdir(LOG_PATH, FILEMODE);
+    if( result == -1){
+        if(errno != EEXIST){
+            perror("unxpected mkdir() error");
+            return -1;
+        }
     }
 
     char* file_path = set_path( LOG_PATH,  "/log_program.txt" );
     fd_log_prog = open( file_path, O_CREAT|O_TRUNC|O_RDWR, FILEMODE );
     free( file_path );
     if( fd_log_prog == -1 ){
-        perror( "open log as daemon error:" );
-        log_entry( fd_log_prog, strerror( errno ) );
+        perror( "open log as daemon error" );
         return -1;
     }
     log_entry( fd_log_prog, "daemon program log created" );
@@ -282,6 +259,8 @@ int main( int argc, char *argv[] ){
         return -1;
     }
     close( fd_serv );
+    log_entry( fd_log_prog, "close(fd_serv)" );
+    log_entry( fd_log_serv, "socket closed" );
     kill( pid_main, SIGCONT );
     log_entry( fd_log_prog, "accept() success" );
     log_entry( fd_log_serv, "connection opened" );
@@ -289,7 +268,7 @@ int main( int argc, char *argv[] ){
     char buffer[BUFF_SIZE];
     memset( buffer, '\0', BUFF_SIZE);
     strcpy( buffer, "\n\t\t----------------------------\n\t\t-- Welcome to the server! --\n\t\t----------------------------\n" );
-    result = send( fd_client, buffer, strlen( buffer ), 0 );
+    send( fd_client, buffer, strlen( buffer ), 0 );
     log_entry( fd_log_serv, "welcome msg sent" );
 
     while( 1 ){
@@ -300,27 +279,24 @@ int main( int argc, char *argv[] ){
         }
 
         memset( buffer, '\0', BUFF_SIZE );
-        result = recv( fd_client, buffer, BUFF_SIZE, 0 );
+        recv( fd_client, buffer, BUFF_SIZE, 0 );
         log_entry( fd_log_serv, "msg recieved" );
         if( strcmp( buffer, "close" ) == 0 ){
-            add_prefix( buffer );
             log_entry( fd_log_serv, buffer);
+            add_prefix( buffer );
             strcat( buffer, "\n\t\t----------------------------\n\t\t--------- Goodbye! ---------\n\t\t----------------------------\n");
-            result = send( fd_client, buffer, strlen(buffer), 0);
+            send( fd_client, buffer, strlen(buffer), 0);
             break;
         }
 
-        add_prefix( buffer );
-        result = send( fd_client, buffer, strlen(buffer), 0);
         log_entry( fd_log_serv, buffer);
+        add_prefix( buffer );
+        send( fd_client, buffer, strlen(buffer), 0);
     }
 
     close(fd_client);
     log_entry( fd_log_serv, "connection closed" );
     log_entry( fd_log_prog, "close(fd_client)" );
-    close(fd_serv);
-    log_entry( fd_log_serv, "socket closed" );
-    log_entry( fd_log_prog, "close(fd_serv)" );
 
     log_entry( fd_log_serv, "server log finished" );
     log_entry( fd_log_prog, "close(fd_log_serv)" );

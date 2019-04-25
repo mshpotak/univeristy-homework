@@ -15,42 +15,28 @@
 
 #define PORT 3210
 
-int wait_for_msg(int fd_serv, double timeout){
+int wait_for_msg(int fd_serv, int timeout_ms){
     int result;
     struct pollfd sfd;
     sfd.fd = fd_serv;
     sfd.events = POLLIN;
-    time_t time_start, time_current;
-    time( &time_start );
-    //wait until data is available
-    time( &time_current );
-    while( (timeout == 0) || ( difftime( time_current, time_start ) < timeout ) ){
-        result = poll(&sfd, 1, 5000);
+    time_t time_current;
+    while(1){
+        result = poll(&sfd, 1, timeout_ms);
         time( &time_current );
         if(result == 0){
-            printf("%.8s No connections found...\n", ctime( &time_current ) + 11 );
-            continue;
+            return 1;
         }
         if(result == -1){
             perror("poll error:");
             return -1;
         };
         if(result > 0){
-            //check for error
             if(sfd.revents & POLLERR){
-                //perror("poll revents error:");
-                continue;
+                return -1;
             }
-            //recv() if data is available
             if(sfd.revents & POLLIN){
                 return 0;
-                // result = fork();
-                // if( result == 0 ) {
-                //     close(fd_serv);
-                //     return;
-                // } else {
-                //     continue;
-                // }
             }
         }
     }
