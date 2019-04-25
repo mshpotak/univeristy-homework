@@ -1,3 +1,7 @@
+// by Mykhailo SHPOTAK
+// https://github.com/mshpotak/univeristy-homework/tree/master/vountesmery-digitech-unix/completed/lab4
+
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
