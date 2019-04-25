@@ -61,26 +61,26 @@ void log_entry( int fd_log, const char* note ){
     return;
 }
 
-int wait_for_connection( int fd_serv ){
+int wait_for_connection( int fd_serv, int timeout_ms ){
     int result;
     struct pollfd sfd;
     sfd.fd = fd_serv;
     sfd.events = POLLIN;
     //wait until data is available
     while(1){
-        result = poll(&sfd, 1, 0);
-        if(result == 0){
-            continue;
+        result = poll( &sfd, 1, timeout_ms );
+        if( result == 0 ){
+            return 1;
         }
-        if(result == -1){
+        if( result == -1 ){
             continue;
         };
-        if(result > 0){
-            if(sfd.revents & POLLERR){
+        if( result > 0 ){
+            if( sfd.revents & POLLERR ){
                 continue;
             }
             //recv() if data is available
-            if(sfd.revents & POLLIN){
+            if( sfd.revents & POLLIN ){
                 result = fork();
                 if( result == 0 ) {
                     return 0;
@@ -250,7 +250,10 @@ int main( int argc, char *argv[] ){
     log_entry( fd_log_serv, "server log created" );
 
     log_entry( fd_log_serv, "connection polling started" );
-    wait_for_connection( fd_serv );
+    if( wait_for_connection( fd_serv, TIMEOUT_MS) == 1){
+        log_entry( fd_log_serv, "no client activity; server shutdown" );
+        exit(0);
+    };
     log_entry( fd_log_serv, "connection found" );
 
     int fd_client;
