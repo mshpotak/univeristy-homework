@@ -49,7 +49,7 @@ int main(int argc, const char *argv[]){
         printf("Error. Enter 2 arguments.\n");
         return -1;
     }
-    //initialize file decriptors
+    //declare file decriptors
     int file1fd, file2fd;
 
     //open 1st file as RD
@@ -67,11 +67,11 @@ int main(int argc, const char *argv[]){
           print_error();
     }while(file1fd == -1);
 
-    //initialize read/write buffer
+    //declare read/write buffer
     int buffer_size = 512;
     char buffer[buffer_size];
 
-    //initialize read&write cycle&total byte counters
+    //declare read&write cycle&total byte counters
     int bytes_rd, total_rd = 0;
     int bytes_wr, total_wr = 0;
     //make a loop
