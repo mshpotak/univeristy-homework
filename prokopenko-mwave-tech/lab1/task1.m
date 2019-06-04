@@ -26,4 +26,6 @@ s2 = signalFreqModulation(1, Mf, m, 0, w, wm, t);
 %phase modulation
 
 [s3, phi3] = signalPhaseModulation(1, m, 2, w, t);
+
 [s4, phi4] = signalPhaseModulation(1, m, 4, w, t);
+[s5, phi5 , m5] = signalPhaseModulation(1, m, 42, w, t);
