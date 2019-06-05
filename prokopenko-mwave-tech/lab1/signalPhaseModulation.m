@@ -1,69 +1,73 @@
-function [s , phi, m_new] = signalPhaseModulation( A0, m, mshift, w, t )
-    if mshift == 2
-        m = (m + 1)/2;
-        phi = pi * (1 - m);
-    elseif mshift == 4
-        m = (m + 1)/2;
-        n_normal = [1, 2, 3, 4];
-        n_gray = [1, 2, 4, 3];
-        n = n_gray;
-        j = 0;
-        for i = 1 : 2 : length(m)-1
-            j = j + 1;
-            if m(i) == 0
-                if m(i+1) == 0 
-                    phi(j) = (pi/4) * (2*n(3) - 1);
+function [s, m, t, phi] = signalPhaseModulation( A0, data, Fs, t_data, encode, w)
+    
+    smp_rate = Fs * t_data;
+    
+    if encode == "2"
+        T = t_data * length(data);
+        t = 0 : 1/Fs : T - 1/Fs;
+        m = zeros( size(t) );
+        for i = 1 : length(data)
+            if data(i) == 0
+                m( (1 + ((i-1)*smp_rate)) : (i*smp_rate) ) = -1;
+            else
+                m( (1 + ((i-1)*smp_rate)) : (i*smp_rate) ) = 1;
+            end
+        end
+        phi = pi * (1 - (m + 1)/2 );
+        s = A0 * cos( w*t + phi );   
+    else
+        i1 = 1;
+        i2 = 1;
+        for i = 0 : length(data)-1
+            if mod(i,2) == 0
+                if data(i+1) == 0
+                    di(i1) = -1;
                 else
-                    phi(j) = (pi/4) * (2*n(2) - 1);
+                    di(i1) = 1;
+                end 
+                i1 = i1 + 1;
+            else
+                if data(i+1) == 0
+                    dq(i2) = -1;
+                else
+                    dq(i2) = 1;
+                end
+                i2 = i2 + 1;
+            end
+        end
+        dI = [];
+        dQ = [];
+        for i = 1 : length(data)/2
+            dI = [dI di(i)*ones( 1, smp_rate )];
+            dQ = [dQ dq(i)*ones( 1, smp_rate )];
+        end
+        T = t_data * length(data)/2;
+        t = 0 : 1/Fs : T - 1/Fs;
+        
+        if encode == "pi/4"
+            phi_add = 0;
+        else 
+            phi_add = pi/4;
+        end
+        
+        s = ( dI.*cos(w*t + pi/4 + phi_add) + dQ.*sin(w*t + pi/4 + phi_add) ) / sqrt(2);
+        m = [dI; dQ];
+        
+        for i = 1 : length(m)
+            if m(1,i) == 1
+                if m(2,i) == 1
+                    phi(i) = phi_add;
+                else
+                    phi(i) = 0.5 * pi + phi_add;
                 end
             else
-                if m(i+1) == 0 
-                    phi(j) = (pi/4) * (2*n(4) - 1);
+                if m(2,i) == 1
+                    phi(i) = 1.5 * pi + phi_add;
                 else
-                    phi(j) = (pi/4) * (2*n(1) - 1);
+                    phi(i) = pi + phi_add;
                 end
             end
         end
-        phi = [ phi phi(end) ];
-    elseif mshift == 42
-        byte_le = [0 0 1 1 1 0 1 0]; % little endian
-        n_bit = 8;
-        t_bit = 6e-6; % s (6 mcs)
-        s_bit = 12; %samples per bit
-        Fs = s_bit/t_bit; %sample rate
-        clear m;
-        pulse_rate = t_bit * Fs;
-        for i = 1 : n_bit/2
-            j = i + (i-1);
-            if byte_le(j) == 0
-                if byte_le(j+1) == 0
-                    m( (1 + ((i-1)*pulse_rate)) : (i*pulse_rate) ) = "00";
-                else
-                    m( (1 + ((i-1)*pulse_rate)) : (i*pulse_rate) ) = "01";
-                end
-            else
-                if byte_le(j+1) == 0
-                    m( (1 + ((i-1)*pulse_rate)) : (i*pulse_rate) ) = "10";
-                else
-                    m( (1 + ((i-1)*pulse_rate)) : (i*pulse_rate) ) = "11";
-                end
-            end
-         end
-         n_normal = [1, 2, 3, 4];
-         n_gray = [1, 2, 4, 3];
-         n = n_gray;
-         for i = 1 : length(m)
-            if     m(i) == "00"
-                phi(i) = (pi/4) * (2*n(3) - 1);
-            elseif m(i) == "01"
-                phi(i) = (pi/4) * (2*n(2) - 1);
-            elseif m(i) == "10" 
-                phi(i) = (pi/4) * (2*n(4) - 1);
-            elseif m(i) == "11"
-                phi(i) = (pi/4) * (2*n(1) - 1);
-            end
-         end
-         m_new = m;
     end
-    s = A0 * cos( w*t(1:length(phi)) + phi );
+    
 end

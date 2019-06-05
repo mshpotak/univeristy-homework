@@ -24,8 +24,30 @@ wm = 2 * pi / t_bit;
 s2 = signalFreqModulation(1, Mf, m, 0, w, wm, t);
 
 %phase modulation
+[s3, m3, t3, phi3] = signalPhaseModulation( 1, byte_le, Fs, t_bit, "2", w);
 
-[s3, phi3] = signalPhaseModulation(1, m, 2, w, t);
+[s4, m4, t4, phi4] = signalPhaseModulation( 1, byte_le, Fs, t_bit, "4", w);
 
-[s4, phi4] = signalPhaseModulation(1, m, 4, w, t);
-[s5, phi5 , m5] = signalPhaseModulation(1, m, 42, w, t);
+[s5, m5, t5, phi5] = signalPhaseModulation( 1, byte_le, Fs, t_bit, "pi/4", w);
+
+
+% k = 0.25*pi;
+% for i = 1 : length(m4)
+%     if m4(1,i) == 1
+%         if m4(2,i) == 1
+%             M4(i) = 0.25 * pi - k;
+%         else
+%             M4(i) = 0.75 * pi - k;
+%         end
+%     else
+%         if m4(2,i) == 1
+%             M4(i) = 1.75 * pi - k;
+%         else
+%             M4(i) = 1.25 * pi - k;
+%         end
+%     end
+% end
+% 
+% ss4 = cos(w*t4 + M4);
+
+save('task1.mat')
