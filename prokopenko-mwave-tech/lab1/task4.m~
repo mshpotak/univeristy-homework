@@ -19,6 +19,13 @@ end
 s1 = signalAmpModulation(1, Ma, m, 0, w, t);
 %plot( t, s1, '-ro' )
 
-[G1, F1] = myFourier( s1, Fs );
+figure()
+L = length(s1);
+F = Fs*(0:L-1)/L;
+g = fft(s1);
+G = abs(g/L);
+plot(F,G);
+xlabel('Frequency, Hz');
+ylabel('Amplitude');
 
-save('task4.mat')
+save('task4.mat'

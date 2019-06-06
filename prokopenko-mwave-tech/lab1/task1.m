@@ -1,13 +1,6 @@
+close all; clear all; clc;
 initial_conditions;
 
-%discrete time
-% T = t_bit * n_bit;
-% sig_len = Fs * T; 
-% t = 0 : 1/Fs : T - 1/Fs;
-
-f = 10e6;
-w = 2 * pi * f;
-t_bit = 6e-6;
 s_bit = 256*5; %samples per bit
 Fs = s_bit/t_bit;
 T = t_bit * n_bit;
