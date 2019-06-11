@@ -20,13 +20,16 @@ for i = 1 : n_bit
 end
 
 s1 = signalAmpModulation(1, Ma, m, 0, w, t);
-%plot( t, s1, '-ro' )
+i1 = s1 .* cos( w * t );
+q1 = s1 .* sin( w * t );
 
-figure()
-L = length(s1);
-F = Fs*(0:L-1)/L;
-g = fft(s1);
-G = abs(g/L);
-plot(F,G);
-xlabel('Frequency, Hz');
-ylabel('Amplitude');
+N = 30;
+Wp = 0.07;
+fi1 = customFilter( i1, N, Wp ); 
+fi1 = 2 * fi1;
+fq1 = customFilter( q1, N, Wp );
+fq1 = -2 *fi1;
+[G, F, Fn] = customFourier(fi1 + 1i*fq1, Fs);
+plot(Fn,fftshift(G))
+
+save('task4.mat')
