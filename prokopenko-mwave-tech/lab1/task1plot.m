@@ -2,16 +2,13 @@ close all; clear all; clc;
 load('task1.mat');
 
 figure(1);
-plot(t,s1);
+plot(t,m,'.r-');
+grid on;
 
 figure(2);
-plot(t,s2);
+plot(t3,phi3*180/pi,'.r-');
+grid on;
 
 figure(3);
-plot(t3,s3);
-
-figure(4);
-plot(t4,s4);
-
-figure(5);
-plot(t5,s5);
+plot(t4,phi4*180/pi,'.r-.',t5,phi5*180/pi,'.b-.');
+grid on;
