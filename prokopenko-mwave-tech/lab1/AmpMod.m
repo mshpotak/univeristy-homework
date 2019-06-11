@@ -22,11 +22,17 @@ q1 = s1 .* sin( w * t );
 
 n = 30;
 Wn = 0.07;
-b = fir1( n, Wn );
-fi1 = 2 * filter( b, 1, i1);
-fq1 = -2 * filter( b, 1, q1);
+b1 = fir1( n, Wn );
+fi1 = 2 * filter( b1, 1, i1);
+fq1 = -2 * filter( b1, 1, q1);
+
 [G, F, Fn] = customFourier(fi1 + 1i*fq1, Fs);
-plot(Fn,fftshift(G))
-[G1, F1] = myFourier( s1, Fs );
+
+b2 = fir1( n, 0.5 );
+fi2 = filter( b2, 1, fi1 );
+fq2 = filter( b2, 1, fq1 );
+
+s2 = fi2 .* cos( w * t ) - fq2 .* sin( w * t );
+
 
 save('task4.mat')
