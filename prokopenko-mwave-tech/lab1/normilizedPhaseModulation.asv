@@ -1,0 +1,33 @@
+function phi = normilizedPhaseModulation( m, type )
+    initial_conditions;
+    if type == "QPSK"
+        b1 = byte(  mod( 1 : length(byte), 2) == 1  );
+        b2 = byte(  mod( 1 : length(byte), 2) == 0  );
+        bphi = zeros( size( b1 ) );
+        for i = 1 : length(m1)
+            if b1(i) == 1
+                if b2(i) == 1
+                    bphi(i) = 0.25 * pi;
+                else
+                    bphi(i) = 0.75 * pi;
+                end
+            else
+                if b2(i) == 1
+                    bphi(i) = 1.75 * pi;
+                else
+                    bphi(i) = 1.25 * pi;
+                end
+            end
+        end
+        phi = zeros( lenght(m)/2 );
+        for i = 1 : n_bit
+            if byte(i) == 0
+                m( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = -1;
+            else
+                m( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = 1;
+            end
+        end
+    elseif type == "BPSK"
+        phi = pi * ( 1 - (m + 1)/2 );
+    end
+end
