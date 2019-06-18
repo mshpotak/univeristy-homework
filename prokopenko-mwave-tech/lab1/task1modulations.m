@@ -11,10 +11,11 @@ phi2 = normilizedPhaseModulation( m, s_bit, "BPSK" );
 phi4 = normilizedPhaseModulation( m, s_bit, "QPSK" );
 th = t(1 : length( phi4 ));
 
-bg = gaussfir( 0.2, 2, 5 );
+bg = gaussfir( 0.2, 2, 4 );
 gauss_m = filter( bg, 1 , m );
-gauss_phi2 = filter( bg, 1 , phi2 );
-gauss_phi4 = filter( bg, 1 , phi4 );
+bc = firrcos( 10,0.4,0.6 );
+cos_phi2 = filter( bc, 1 , phi2 );
+cos_phi4 = filter( bc, 1 , phi4 );
 
 save('task1.mat');
 
@@ -43,11 +44,11 @@ subplot( N1, N2, 1 );
 plot( t, gauss_m, '-k.' ); plotp( 't, сек', 'filtered m(t)' );
 title( 'ASK/FSK' );
 subplot( N1, N2, 2 );
-plot( t, gauss_phi2 * 180/pi, '-r.' ); 
+plot( t, cos_phi2 * 180/pi, '-r.' ); 
 plotp( 't, сек', 'filtered phi(t)' );
 title( 'BPSK' );
 subplot( N1, N2, 3 );
-plot( th, gauss_phi4 * 180/pi, '-b.' ); 
+plot( th, cos_phi4 * 180/pi, '-b.' ); 
 plotp( 't, сек', ' filtered phi(t)' );
 title( 'QPSK' );
 saveas( h2, fullfile( 'task1', ['1_gmods','.png'] ) );

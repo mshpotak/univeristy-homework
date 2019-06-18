@@ -9,11 +9,11 @@ function phi = normilizedPhaseModulation( m, s_bit, type )
                 if b2(i) == 1
                     phi( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = 0.25 * pi;
                 else
-                    phi( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = 0.75 * pi;
+                    phi( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = 1.75 * pi;
                 end
             else
                 if b2(i) == 1
-                    phi( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = 1.75 * pi;
+                    phi( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = 0.75 * pi;
                 else
                     phi( (1 + ((i-1)*s_bit)) : (i*s_bit) ) = 1.25 * pi;
                 end
