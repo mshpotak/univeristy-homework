@@ -1,108 +1,145 @@
+function [x,y] = geometry( bs, S )
+    initial_conditions;
+    
+    X_coord(1,:) = [ 0, w/2 ];
+    Y_coord(1,:) = [ h1+h2, h1+h2 ];
+    
+    X_coord(2,:) = [ w/2, w/2 ];
+    Y_coord(2,:) = [ h1+h2, h1+h2+t ];
+    
+    X_coord(3,:) = [ w/2, w+w/2 ];
+    Y_coord(3,:) = [ h1+h2+t, h1+h2+t ];
+    
+    X_coord(4,:) = [ w+w/2, w+w/2 ];
+    Y_coord(4,:) = [ h1+h2+t, h1+h2 ];
+    
+    X_coord(5,:) = [ w/2, w+w/2 ];
+    Y_coord(5,:) = [ h1+h2, h1+h2 ];
+    
+    X_coord(6,:) = [ w+w/2, s+w+w/2 ];
+    Y_coord(6,:) = [ h1+h2, h1+h2 ];
+    
+    X_coord(7,:) = [ s+w+w/2, s+w+w/2 ];
+    Y_coord(7,:) = [ h1+h2, h1+h2+t ];
+    
+    X_coord(8,:) = [ s+w+w/2, s+2*w+w/2 ];
+    Y_coord(8,:) = [ h1+h2+t, h1+h2+t ];
 
-function [x,y]=geometry(bs,s)
-
-    %перша лінія
-    X_coord(1,:)=[100 100];
-    Y_coord(1,:)=[200 220];
-    X_coord(2,:)=[100 400];
-    Y_coord(2,:)=[220 220];
-    X_coord(3,:)=[400 400];
-    Y_coord(3,:)=[220 200];
-    X_coord(4,:)=[400 100];
-    Y_coord(4,:)=[200 200];
-
-    %друга лінія
-    X_coord(5,:)=[450 450];
-    Y_coord(5,:)=[200 220];
-    X_coord(6,:)=[450 750];
-    Y_coord(6,:)=[220 220];
-    X_coord(7,:)=[750 750];
-    Y_coord(7,:)=[220 200];
-    X_coord(8,:)=[750 450];
-    Y_coord(8,:)=[200 200];
-
-    X_coord(9,:)=[000 000];
-    Y_coord(9,:)=[000 100];
-    X_coord(10,:)=[000 000];
-    Y_coord(10,:)=[100 200];
-    X_coord(11,:)=[000 000];
-    Y_coord(11,:)=[200 300];
-    X_coord(12,:)=[000 850];
-    Y_coord(12,:)=[300 300];
-    X_coord(13,:)=[850 850];
-    Y_coord(13,:)=[300 200];
-    X_coord(14,:)=[850 850];
-    Y_coord(14,:)=[200 100];
-    X_coord(15,:)=[850 850];
-    Y_coord(15,:)=[100 000];
-    X_coord(16,:)=[850 0000];
-    Y_coord(16,:)=[000 000];
-    X_coord(17,:)=[000 850];
-    Y_coord(17,:)=[100 100];
-    X_coord(18,:)=[000 100];
-    Y_coord(18,:)=[200 200];
-    X_coord(19,:)=[400 450];
-    Y_coord(19,:)=[200 200];
-    X_coord(20,:)=[750 850];
-    Y_coord(20,:)=[200 200];
+    X_coord(9,:) = [ s+2*w+w/2, s+2*w+w/2 ];
+    Y_coord(9,:) = [ h1+h2+t, h1+h2 ];
+    
+    X_coord(10,:) = [ s+w+w/2, s+2*w+w/2 ];
+    Y_coord(10,:) = [ h1+h2, h1+h2 ];
+    
+    X_coord(11,:) = [ s+2*w+w/2, s+2*w+w ];
+    Y_coord(11,:) = [ h1+h2, h1+h2 ];
+    
+    X_coord(12,:) = [ s+2*w+w, s+2*w+w ];
+    Y_coord(12,:) = [ h1+h2, h2 ];
+    
+    X_coord(13,:) = [ s+2*w+w, s+2*w+w ];
+    Y_coord(13,:) = [ h2, 0 ];
+    
+    X_coord(14,:) = [ s+2*w+w, 0 ];
+    Y_coord(14,:) = [ 0, 0 ];
+    
+    X_coord(15,:) = [ 0, 0 ];
+    Y_coord(15,:) = [ 0, h2 ];
+    
+    X_coord(16,:) = [ 0, s+2*w+w ];
+    Y_coord(16,:) = [ h2, h2 ];
+    
+    X_coord(17,:) = [ 0, 0 ];
+    Y_coord(17,:) = [ h2, h1+h2 ];
 
 
-    nbs=length(X_coord(:,1)); % quantity of segments
-    d=zeros(4,nbs);
-    d(2,:)=1;
+    nbs = length( X_coord(:,1) ); % quantity of segments
+    d = zeros( 4, nbs );
+    d( 2, : ) = 1;
+    
+    d( 3, 1 ) = 0; 
+    d( 4, 1 ) = 30;
+    
+    d( 3, 2 ) = 0; 
+    d( 4, 2 ) = 20;
 
-    d(3,1:3)=50;
-    d(4,1:3)=00;
+    d( 3, 3 ) = 0;
+    d( 4, 3 ) = 20;
+    
+    d( 3, 4 ) = 0;
+    d( 4, 4 ) = 20;
+    
+    d( 3, 5 ) = 20;
+    d( 4, 5 ) = 30;
+    
+    d( 3, 6 ) = 0;
+    d( 4, 6 ) = 30;
+    
+    d( 3, 7 ) = 0;
+    d( 4, 7 ) = 20;
+    
+    d( 3, 8 ) = 0;
+    d( 4, 8 ) = 20;
+    
+    d( 3, 9 ) = 0;
+    d( 4, 9 ) = 20;
+    
+    d( 3, 10 ) = 20;
+    d( 4, 10 ) = 30;
 
-    d(3,5:7)=50;
-    d(4,5:7)=00;
+    d( 3, 11 ) = 0;
+    d( 4, 11 ) = 30;
+    
+    d( 3, 12 ) = 0;
+    d( 4, 12 ) = 30;
+    
+    d( 3, 13 ) = 0;
+    d( 4, 13 ) = 40;
+    
+    d( 3, 14 ) = 0;
+    d( 4, 14 ) = 40;
+    
+    d( 3, 15 ) = 0;
+    d( 4, 15 ) = 40;
+    
+    d( 3, 16 ) = 30;
+    d( 4, 16 ) = 40;
+    
+    d( 3, 17 ) = 0;
+    d( 4, 17 ) = 30;
 
-    d(3,[4 8 ])=20;
-    d(4,[4 8 ])=00;
-
-    d(3,18:20)=50;
-    d(4,18:20)=20;
-
-    d(3,11:13)=00;
-    d(4,11:13)=50;
-
-    d(3,[9 15 16])=00;
-    d(4,[9 15 16])=40;
-
-    d(3,17)=20;
-    d(4,17)=40;
-
-    d(3,[10 14])=00;
-    d(4,[10 14])=20;
-
-    if nargin==0,
-    x=nbs; % number of boundary segments
-    return
+    if nargin == 0
+        x = nbs; % number of boundary segments
+        return
     end
-    bs1=bs(:)';
-    if find(bs1<1 | bs1>nbs),
-    error('Non existent boundary segment number')
+    
+    bs1 = bs(:)';
+    if find( bs1<1 | bs1>nbs )
+        error('Non existent boundary segment number')
     end
-    if nargin==1,
-    x=d(:,bs1);
-    return
+    
+    if nargin == 1
+        x = d( :, bs1 );
+        return
     end
-    x=zeros(size(s));
-    y=zeros(size(s));
-    [m,n]=size(bs);
-    if m==1 & n==1,
-    bs=bs*ones(size(s)); % expand bs
-    elseif m~=size(s,1) | n~=size(s,2),
-    error('bs shall be a scalar or of same size as s');
+    
+    x = zeros( size(S) );
+    y = zeros( size(S) );
+    [m,n] = size( bs );
+    
+    if m == 1 && n == 1
+        bs = bs*ones(size(S)); % expand bs
+    elseif m ~= size(S,1) || n ~= size(S,2)
+        error('bs shall be a scalar or of same size as s');
     end
-    if ~isempty(s),
-    for ll=1:nbs
-    ii=find(bs==ll);
-
-    if length(ii)
-    x(ii)=interp1( d(1:2,ll), X_coord(ll,:), s(ii));
-    y(ii)=interp1( d(1:2,ll), Y_coord(ll,:), s(ii));
-    end
-    end
+    
+    if ~isempty(S)
+        for ll = 1:nbs
+            ii = find( bs == ll );
+            if length(ii)
+                 x(ii) = interp1( d(1:2,ll), X_coord(ll,:), S(ii) );
+                 y(ii) = interp1( d(1:2,ll), Y_coord(ll,:), S(ii) );
+            end
+        end
     end
 end

@@ -9,19 +9,19 @@ function [q,g,h,r]=bound(p,e,u,t)
 
     % boundary conditions at the edge 1-4
     for i=1:4
-        esegm=find(e(5,:)==i);
-        h(esegm)=1;
-        h(esegm+ne)=1;
-        r(esegm)=0.0;
-        r(esegm+ne)=0.0;
+    esegm=find(e(5,:)==i);
+    h(esegm)=1;
+    h(esegm+ne)=1;
+    r(esegm)=0.0;
+    r(esegm+ne)=0.0;
     end
     % boundary conditions at the edge 5-8
     for i=5:8
-        esegm=find(e(5,:)==i);
-        h(esegm)=1;
-        h(esegm+ne)=1;
-        r(esegm)=2;
-        r(esegm+ne)=2;
+    esegm=find(e(5,:)==i);
+    h(esegm)=1;
+    h(esegm+ne)=1;
+    r(esegm)=2;
+    r(esegm+ne)=2;
     end
 end 
  

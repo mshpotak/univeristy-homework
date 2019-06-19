@@ -43,7 +43,7 @@ a(zone20)=E20;
 zone40=find(t(4,:)==40); 
 a(zone40)=E40;
 zone50=find(t(4,:)==50);
-psi = assempde('bound',p,e,t,a,b,f);
+psi=assempde('bound',p,e,t,a,b,f);
 pdesurf(p,t,psi)
 set(gca,'Xlim',Xlim);
 set(gca,'Ylim',Ylim);
