@@ -102,3 +102,76 @@ disp(['Эфективная диэлектрическая проницаемость = [', num2str(Eef),']']);
 D_z = sum( (sqrt(A)).*( dpsi_dx.*dpsi_dx + dpsi_dy.*dpsi_dy ).*AR );
 Z = Z0*(phi1-phi2)*(phi1-phi2)/D_z;
 disp(['Характеристическое сопротивление = [', num2str(Z), ']']);
+
+
+%6 Графики напряженности электрического и магнитного полей в ортогональных направлениях
+
+mkdir('task4');
+% Электрическое поле
+fig5 = figure('Units', 'normalized', 'OuterPosition', [0.1 0.1 0.8 0.9] );
+surf( x, y, sqrt( Ex_qu.*Ex_qu + Ey_qu.*Ey_qu ) )
+daspect([1 0.5 2]); colormap hsv; 
+xlabel( 'x, мм' ); ylabel( 'y, мм' ); zlabel( 'E, В/м' ); 
+title( 'Напряженность электрического поля вдоль X, Y' );
+saveas( fig5, fullfile( 'task4', 'esurf.png' ) );
+ 
+% Магнитное поле
+fig6 = figure('Units', 'normalized', 'OuterPosition', [0.1 0.1 0.8 0.9] );
+surf( x, y, sqrt( Hx_qu.*Hx_qu + Hy_qu.*Hy_qu ) );
+daspect([1 0.5 0.005]); colormap hsv; 
+xlabel( 'x, мм' ); ylabel( 'y, мм' ); zlabel( 'H, А/м' ); 
+title(strcat('Напряженность магнитного поля вдоль X, Y'));
+saveas( fig6, fullfile( 'task4', 'hsurf.png' ) );
+
+%7 Параметрические зависимости
+
+%%
+%Залежність від S
+s11(1)=s1(1)-s
+s11(2)=s1(2)-s
+j1=s11(1)*K;
+j2=s11(2)*K;  
+h=0;
+for j=j1:1:j2
+save -ascii j.txt j
+figure(14)
+pdegplot('geometry_s'), axis equal;
+[p,e,t]=initmesh('geometry_s');
+[p,e,t]=refinemesh('geometry_s',p,e,t);
+pdemesh(p,e,t); 
+axis equal
+% Еф. діелектрична проникність(33)
+[AR,A1,A2,A3]=pdetrg(p,t);
+b=0;f=0;
+psi1=assempde('bound',p,e,t,1,b,f);
+[dpsi_dx1,dpsi_dy1]=pdegrad(p,t,psi1);
+D=sum((dpsi_dx1.*dpsi_dx1+dpsi_dy1.*dpsi_dy1).*AR);
+a=ones(1,length(t));
+zone20=find(t(4,:)==20);
+a(zone20)=E20;
+zone40=find(t(4,:)==40); 
+a(zone40)=E40;
+psi=assempde('bound',p,e,t,a,b,f);
+[dpsi_dx,dpsi_dy]=pdegrad(p,t,psi);
+N = sum(a.*(dpsi_dx.*dpsi_dx+dpsi_dy.*dpsi_dy).*AR);
+Eef(h+1) = N/D;
+% Характеристичний опір  (27)
+D_z = sum( (sqrt(a)).*(dpsi_dx.*dpsi_dx+dpsi_dy.*dpsi_dy).*AR);
+Z(h+1) = 120*pi*(phi1-phi2)*(phi1-phi2)/D_z;
+h=h+1;
+end
+ 
+s111=(s1(1)*K:s1(2)*K)/K;
+figure(11)
+plot(s111,Eef)
+title('Залежність ефективної діелектричної проникності від  s');
+xlabel('s ,мм');
+ylabel('Ееф.');
+xlim([0 s1(2)])
+ 
+figure(12)
+plot(s111,Z)
+title('Залежність характеристичного опору від s');
+xlabel('s, мм');
+ylabel('Z, Ом');
+xlim([0 s1(2)])
